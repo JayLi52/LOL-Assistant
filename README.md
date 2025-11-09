@@ -1,48 +1,48 @@
-# Go와 Gemini를 활용하여 League of Legends Assistant Discord Bot 만들기
+# 使用 Go 和 Gemini 构建英雄联盟助手 Discord 机器人
 
-## Install
+## 安装
 ```shell
 go get -u github.com/bwmarrin/discordgo
 go get -u github.com/google/generative-ai-go
 go get -u github.com/joho/godotenv
 ```
 
-## env
+## 环境变量
 ```dotenv
-BOT_TOKEN="디스코드 봇 토큰"
+BOT_TOKEN="Discord 机器人令牌"
 GEMINI_API_KEY="Gemini API Key"
-GEMINI_INSTRUCTIONS="Gemini 지침사항"
+GEMINI_INSTRUCTIONS="Gemini 指令说明"
 RIOT_GAMES_API_KEY="Riot Games API Key"
 ```
 ```shell
 cp .env.example .env
 ```
-`.env.exapmle`파일을 카피하여 `.env` 파일을 만들어 주세요.
+请复制 `.env.example` 文件创建 `.env` 文件。
 
-## Slide
-[링크](https://docs.google.com/presentation/d/1Ja5rL4fyNQ3PSRv_hyy23PqtVl0dL-nuZG1BwClwn5k/edit?usp=sharing )
+## 幻灯片
+[链接](https://docs.google.com/presentation/d/1Ja5rL4fyNQ3PSRv_hyy23PqtVl0dL-nuZG1BwClwn5k/edit?usp=sharing )
 
-## riot games open api
-[링크](https://developer.riotgames.com/apis)
+## Riot Games 开放 API
+[链接](https://developer.riotgames.com/apis)
 
-## discord bot
-[링크](https://discord.com/developers/applications)
+## Discord 机器人
+[链接](https://discord.com/developers/applications)
 
-## How to use
-### Run
+## 使用方法
+### 运行
 ```shell
 go mod tidy
 go run .
 ```
 ![run](readme.png)
 
-### 명령어
+### 命令
 ```
-디코봇아 ${프롬프트}
+机器人 ${提示词}
 ```
-- Gemini와 대화를 할 수 있습니다. (슬라이드 참조)
+- 可以与 Gemini 进行对话。（参考幻灯片）
 
 ```
-내가 마지막으로 플레이한 게임을 분석해줘|${닉네임}#${태그}
+分析我最后一场游戏|${昵称}#${标签}
 ```
-- 라이엇 오픈 API를 사용하여 마지막으로 플레이한 게임을 Gemini가 분석해줍니다. (슬라이드 참조)
+- 使用 Riot 开放 API 获取最后一场游戏，由 Gemini 进行分析。（参考幻灯片）

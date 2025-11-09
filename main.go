@@ -12,51 +12,51 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// main 함수는 프로그램의 진입점이며 디스코드 봇을 초기화하고 실행합니다.
-// .env 파일에서 환경 변수를 로드하고, Gemini 클라이언트를 초기화한 후
-// 디스코드 봇을 시작합니다. 봇이 실행된 후에는 CTRL-C와 같은 인터럽트 신호를
-// 기다려 프로그램을 종료합니다.
+// main 函数是程序的入口点，用于初始化和运行 Discord 机器人。
+// 从 .env 文件加载环境变量，初始化 Gemini 客户端后
+// 启动 Discord 机器人。机器人运行后，等待 CTRL-C 等中断信号
+// 来终止程序。
 func main() {
-	// .env 파일에서 환경 변수 로드
+	// 从 .env 文件加载环境变量
 	err := godotenv.Load("./.env")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Gemini 클라이언트 초기화
+	// 初始化 Gemini 客户端
 	disocrd.Initialize()
 
-	// 디스코드 봇 토큰 설정
+	// 设置 Discord 机器人令牌
 	token := fmt.Sprintf("Bot %s", os.Getenv("BOT_TOKEN"))
-	// 디스코드 세션 생성
+	// 创建 Discord 会话
 	dg, err := discordgo.New(token)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return
 	}
 
-	// 메시지 핸들러 등록
+	// 注册消息处理器
 	dg.AddHandler(disocrd.Message)
-	// 길드 메시지 인텐트 설정
+	// 设置公会消息意图
 	dg.Identify.Intents = discordgo.IntentsGuildMessages
 
-	// 디스코드 연결 시작
+	// 开始 Discord 连接
 	err = dg.Open()
 	if err != nil {
 		fmt.Println("error opening connection,", err)
 		return
 	}
 
-	// 봇 실행 중 메시지 출력
+	// 输出机器人运行中消息
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
-	// 종료 신호 대기를 위한 채널 생성
+	// 创建用于等待退出信号的通道
 	sc := make(chan os.Signal, 1)
-	// 종료 신호 감지 설정
+	// 设置退出信号检测
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	// 신호를 수신할 때까지 블록
+	// 阻塞直到接收到信号
 	<-sc
 
-	// 디스코드 연결 종료
+	// 关闭 Discord 连接
 	defer func() {
 		err = dg.Close()
 		if err != nil {

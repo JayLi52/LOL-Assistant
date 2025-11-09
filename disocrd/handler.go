@@ -11,71 +11,71 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// 전역 변수로 Gemini 클라이언트 선언
+// 声明全局变量 Gemini 客户端
 var geminiClient gemini.ChatSession
 
-// Initialize 함수는 봇 시작 시 한 번만 호출되어
-// Gemini AI 클라이언트를 초기화합니다.
+// Initialize 函数在机器人启动时只调用一次
+// 用于初始化 Gemini AI 客户端。
 func Initialize() {
 	geminiClient = gemini.NewGeminiClient()
 }
 
-// Message 함수는 디스코드 메시지 이벤트 핸들러입니다.
-// 사용자가 보낸 메시지를 받아 처리하고, 조건에 따라 응답을 전송합니다.
-// 봇 자신이 보낸 메시지는 무시합니다.
+// Message 函数是 Discord 消息事件处理器。
+// 接收用户发送的消息并处理，根据条件发送响应。
+// 忽略机器人自己发送的消息。
 func Message(s *discordgo.Session, m *discordgo.MessageCreate) {
-	// 봇 자신의 메시지는 무시
+	// 忽略机器人自己的消息
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
 
-	// "디코봇아"가 포함된 메시지에 대한 처리
-	if strings.Contains(m.Content, "디코봇아") {
-		// "답변을 생성하고 있어요" 메시지 전송
-		delMsg, err := s.ChannelMessageSend(m.ChannelID, "답변을 생성하고 있어요")
+	// 处理包含"机器人"的消息
+	if strings.Contains(m.Content, "机器人") {
+		// 发送"正在生成回答"消息
+		delMsg, err := s.ChannelMessageSend(m.ChannelID, "正在生成回答")
 		if err != nil {
-			log.Println("답변을 생성하고 있어요 실패", err)
+			log.Println("发送'正在生成回答'失败", err)
 			return
 		}
-		// Gemini AI로 사용자 메시지에 대한 응답 생성
+		// 使用 Gemini AI 生成用户消息的响应
 		resp, err := geminiClient.ChatWithDiscord(context.Background(), m.Content)
 		if err != nil {
-			// 응답 생성 실패 시 에러 메시지 전송
-			_, sendErr := s.ChannelMessageSend(m.ChannelID, "답변을 생성하지 못했어요")
+			// 响应生成失败时发送错误消息
+			_, sendErr := s.ChannelMessageSend(m.ChannelID, "无法生成回答")
 			if sendErr != nil {
-				log.Fatalln("답변생성 실패", err)
+				log.Fatalln("生成回答失败", err)
 				return
 			}
-			log.Println("gemini api 에러", err)
+			log.Println("gemini api 错误", err)
 			return
 		}
 
-		// Gemini AI의 응답을 디스코드 채널에 전송
+		// 将 Gemini AI 的响应发送到 Discord 频道
 		msg, err := s.ChannelMessageSend(m.ChannelID, resp)
 		if err != nil {
-			// 응답 전송 실패 시 에러 메시지 전송
-			_, sendErr := s.ChannelMessageSend(m.ChannelID, "답변을 생성하지 못했어요")
+			// 响应发送失败时发送错误消息
+			_, sendErr := s.ChannelMessageSend(m.ChannelID, "无法生成回答")
 			if sendErr != nil {
-				log.Fatalln("답변생성 실패", err)
+				log.Fatalln("生成回答失败", err)
 				return
 			}
-			log.Println("gemini api 에러", err)
+			log.Println("gemini api 错误", err)
 			return
 		} else {
 			log.Println(msg)
 		}
 
-		// 이전에, "답변을 생성하고 있어요" 메시지 삭제
+		// 删除之前发送的"正在生成回答"消息
 		err = s.ChannelMessageDelete(m.ChannelID, delMsg.ID)
 		if err != nil {
-			log.Println("메세지 삭제 실패", err)
+			log.Println("消息删除失败", err)
 			return
 		}
-	} else if strings.HasPrefix(m.Content, "내가 마지막으로 플레이한 게임을 분석해줘") {
-		// ex: "내가 마지막으로 플레이한 게임을 분석해줘|닉네임#태그
-		delMsg, err := s.ChannelMessageSend(m.ChannelID, "답변을 생성하고 있어요")
+	} else if strings.HasPrefix(m.Content, "分析我最后一场游戏") {
+		// 示例: "分析我最后一场游戏|昵称#标签"
+		delMsg, err := s.ChannelMessageSend(m.ChannelID, "正在生成回答")
 		if err != nil {
-			log.Println("답변을 생성하고 있어요 실패", err)
+			log.Println("发送'正在生成回答'失败", err)
 			return
 		}
 
@@ -86,49 +86,49 @@ func Message(s *discordgo.Session, m *discordgo.MessageCreate) {
 		gameInfo, puuid, err := league.GetMatch(nickName, tag)
 		if err != nil {
 			if err != nil {
-				// 응답 전송 실패 시 에러 메시지 전송
-				_, sendErr := s.ChannelMessageSend(m.ChannelID, "답변을 생성하지 못했어요")
+				// 响应发送失败时发送错误消息
+				_, sendErr := s.ChannelMessageSend(m.ChannelID, "无法生成回答")
 				if sendErr != nil {
-					log.Fatalln("답변생성 실패", err)
+					log.Fatalln("生成回答失败", err)
 					return
 				}
-				log.Println("gemini api 에러", err)
+				log.Println("gemini api 错误", err)
 				return
 			}
 			err = s.ChannelMessageDelete(m.ChannelID, delMsg.ID)
 			if err != nil {
-				log.Println("메세지 삭제 실패", err)
+				log.Println("消息删除失败", err)
 				return
 			}
 		}
-		matchReq := fmt.Sprintf("%s |  puuid: %s, 게임정보: %s | 나의 puuid와 닉네임, 게임태그를 사용해서 내가 플레이한 캐릭터의 정보를 분석해줘", m.Content, puuid, gameInfo)
+		matchReq := fmt.Sprintf("%s |  puuid: %s, 游戏信息: %s | 使用我的 puuid、昵称和游戏标签来分析我玩的角色信息", m.Content, puuid, gameInfo)
 
 		resp, err := geminiClient.ChatWithDiscord(context.Background(), matchReq)
 		if err != nil {
-			// 응답 생성 실패 시 에러 메시지 전송
-			_, sendErr := s.ChannelMessageSend(m.ChannelID, "답변을 생성하지 못했어요")
+			// 响应生成失败时发送错误消息
+			_, sendErr := s.ChannelMessageSend(m.ChannelID, "无法生成回答")
 			if sendErr != nil {
-				log.Fatalln("답변생성 실패", err)
+				log.Fatalln("生成回答失败", err)
 				return
 			}
-			log.Println("gemini api 에러", err)
+			log.Println("gemini api 错误", err)
 			return
 		}
 		log.Println(resp)
 
 		_, err = s.ChannelMessageSend(m.ChannelID, resp)
 		if err != nil {
-			_, sendErr := s.ChannelMessageSend(m.ChannelID, "답변을 생성하지 못했어요")
+			_, sendErr := s.ChannelMessageSend(m.ChannelID, "无法生成回答")
 			if sendErr != nil {
-				log.Fatalln("답변생성 실패", err)
+				log.Fatalln("生成回答失败", err)
 				return
 			}
-			log.Println("gemini api 에러", err)
+			log.Println("gemini api 错误", err)
 			return
 		}
 		err = s.ChannelMessageDelete(m.ChannelID, delMsg.ID)
 		if err != nil {
-			log.Println("메세지 삭제 실패", err)
+			log.Println("消息删除失败", err)
 			return
 		}
 	}
